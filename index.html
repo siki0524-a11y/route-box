@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROUTE BOX | どうせ行くなら、その移動を収入に。</title>
+<style>
+  :root{
+    --bg: #F7F6F1;
+    --bg-alt: #EFEEE6;
+    --ink: #1E2430;
+    --ink-soft: #5B6270;
+    --line: #DCDACD;
+    --blue: #26456B;
+    --blue-deep: #16283F;
+    --amber: #DE9A3C;
+    --amber-deep: #B77A24;
+    --green: #4C8C7D;
+    --red: #B4423C;
+    --white: #FFFFFF;
+    --radius-s: 6px;
+    --radius-m: 14px;
+    --max: 560px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  @media (prefers-reduced-motion: reduce){
+    html { scroll-behavior: auto; }
+    * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+  }
+
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Hiragino Sans", "Yu Gothic", "Noto Sans JP", "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap{
+    max-width: var(--max);
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  section{ padding: 64px 0; }
+  section + section{ border-top: 1px solid var(--line); }
+
+  h1,h2,h3{ margin: 0; font-weight: 700; letter-spacing: 0.01em; }
+
+  .eyebrow{
+    color: var(--blue);
+    font-size: 14px;
+    font-weight: 700;
+    margin: 0 0 12px;
+  }
+
+  p{ color: var(--ink-soft); margin: 12px 0 0; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 56px 0 48px;
+  }
+  .hero h1{
+    font-size: 34px;
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .hero .sub{
+    margin-top: 18px;
+    font-size: 16px;
+    color: var(--ink-soft);
+  }
+  .hero .sub strong{
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  .route-diagram{
+    margin: 32px 0 8px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 20px 16px;
+  }
+  .route-diagram svg{ display:block; width: 100%; height: auto; }
+
+  .cta-group{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .btn{
+    display: block;
+    text-align: center;
+    padding: 16px 20px;
+    border-radius: var(--radius-s);
+    font-size: 16px;
+    font-weight: 700;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    font-family: inherit;
+  }
+  .btn:active{ transform: scale(0.98); }
+  .btn-primary{
+    background: var(--blue);
+    color: var(--white);
+  }
+  .btn-primary:hover{ background: var(--blue-deep); }
+  .btn-secondary{
+    background: var(--white);
+    color: var(--blue);
+    border: 1.5px solid var(--blue);
+  }
+  .btn-secondary:hover{ background: #EEF2F6; }
+  .btn:focus-visible{
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Card: example route ---------- */
+  .card{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 24px;
+  }
+  .trip-header{
+    display:flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+  }
+  .trip-route{
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .trip-meta{
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .match-arrow{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    margin: 20px 0;
+    color: var(--amber-deep);
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .match-arrow::before, .match-arrow::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+  .match-card{
+    background: var(--bg-alt);
+    border-radius: var(--radius-s);
+    padding: 18px;
+  }
+  .match-route{
+    font-size: 17px;
+    font-weight: 700;
+  }
+  .match-grid{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 16px;
+    margin-top: 14px;
+    font-size: 14px;
+  }
+  .match-grid dt{ color: var(--ink-soft); }
+  .match-grid dd{ margin:0; font-weight: 700; color: var(--ink); }
+  .match-grid .reward dd{ color: var(--amber-deep); font-size: 17px; }
+
+  .callout{
+    margin-top: 20px;
+    font-size: 15px;
+    color: var(--ink);
+    background: var(--bg-alt);
+    border-left: 3px solid var(--blue);
+    padding: 12px 16px;
+    border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  }
+
+  /* ---------- Idle-capacity section ---------- */
+  .idle-copy p{ margin-top: 14px; }
+  .idle-copy .lede{
+    color: var(--ink);
+    font-size: 15.5px;
+  }
+  .idle-diagram{
+    margin: 28px 0 8px;
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 24px 16px;
+  }
+  .idle-diagram svg{ display:block; width:100%; height:auto; }
+  .highlight-line{
+    text-align:center;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--blue);
+    margin-top: 24px;
+    padding: 18px;
+    background: var(--bg-alt);
+    border-radius: var(--radius-m);
+  }
+
+  /* ---------- Flow comparison ---------- */
+  .flow{
+    display:flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .flow-group{
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    margin-top: 18px;
+  }
+  .flow-label{
+    padding: 12px 18px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--white);
+  }
+  .flow-label.old{ background: var(--ink-soft); }
+  .flow-label.new{ background: var(--blue); }
+  .flow-steps{ background: var(--white); padding: 18px; }
+  .flow-step{
+    display:flex;
+    align-items:flex-start;
+    gap: 12px;
+    padding: 10px 0;
+    font-size: 15px;
+  }
+  .flow-step .num{
+    flex-shrink:0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--bg-alt);
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .flow-step + .flow-step{ border-top: 1px dashed var(--line); }
+
+  /* ---------- Benefit list ---------- */
+  .chip-list{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .chip{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  .notice{
+    margin-top: 24px;
+    background: #FBF3E4;
+    border: 1px solid #EAD8AF;
+    border-radius: var(--radius-s);
+    padding: 16px;
+    font-size: 13.5px;
+    color: #6B5527;
+    line-height: 1.7;
+  }
+
+  /* ---------- Trust features ---------- */
+  .feature-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .feature{
+    background: var(--white);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 16px 14px;
+    text-align:center;
+  }
+  .feature .icon{
+    width: 36px; height:36px;
+    margin: 0 auto 10px;
+    color: var(--blue);
+  }
+  .feature .icon svg{ width:100%; height:100%; }
+  .feature .label{ font-size: 13.5px; font-weight: 700; color: var(--ink); }
+  .feature-note{
+    margin-top: 16px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  /* ---------- Test recruit ---------- */
+  .test-note{
+    background: var(--bg-alt);
+    border-radius: var(--radius-m);
+    padding: 20px;
+    margin-top: 20px;
+    font-size: 15px;
+  }
+  .test-note .distinguish{
+    margin-top: 14px;
+    display: grid;
+    gap: 8px;
+  }
+  .distinguish-row{
+    display:flex;
+    gap: 10px;
+    align-items:baseline;
+    font-size: 14.5px;
+  }
+  .distinguish-row .no{ color: var(--ink-soft); text-decoration: line-through; }
+  .distinguish-row .yes{ color: var(--blue); font-weight: 700; }
+
+  /* ---------- Forms ---------- */
+  .form-section h2{ margin-bottom: 6px; }
+  .form-intro{ margin-bottom: 24px; }
+
+  form{ margin-top: 24px; }
+  .field{ margin-bottom: 22px; }
+  .field label.field-label, .field span.field-label{
+    display:block;
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .req-mark{
+    display:inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--amber-deep);
+    background: #FBF3E4;
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .field .field-sub{
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: -4px 0 8px;
+  }
+  .field-error{
+    display:none;
+    font-size: 12.5px;
+    color: var(--red);
+    margin-top: 8px;
+    font-weight: 700;
+  }
+  .field-error.show{ display:block; }
+  .field.invalid .option-btn, .field.invalid select{
+    border-color: var(--red);
+  }
+
+  select, input[type="text"], input[type="email"]{
+    width: 100%;
+    padding: 13px 14px;
+    font-size: 15px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    background: var(--white);
+    color: var(--ink);
+    font-family: inherit;
+  }
+  select:focus, input:focus{
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(38,69,107,0.12);
+  }
+
+  .option-grid{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 8px;
+  }
+  .option-btn{
+    flex: 1 1 auto;
+    min-width: 96px;
+    padding: 12px 10px;
+    text-align:center;
+    font-size: 14px;
+    border: 1.5px solid var(--line);
+    border-radius: var(--radius-s);
+    background: var(--white);
+    color: var(--ink);
+    cursor: pointer;
+    font-family: inherit;
+    transition: border-color 0.12s ease, background 0.12s ease, color 0.12s ease;
+  }
+  .option-btn[aria-pressed="true"]{
+    border-color: var(--blue);
+    background: var(--blue);
+    color: var(--white);
+  }
+  .option-btn:focus-visible{
+    outline: 3px solid var(--amber);
+    outline-offset: 2px;
+  }
+  .option-grid.vertical{ flex-direction: column; }
+  .option-grid.vertical .option-btn{ text-align: left; }
+
+  .checkbox-grid{ display:flex; flex-direction:column; gap: 10px; }
+  .checkbox-row{
+    display:flex;
+    align-items:flex-start;
+    gap: 10px;
+    font-size: 14.5px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    background: var(--white);
+    cursor: pointer;
+  }
+  .checkbox-row input{ margin-top: 3px; width: 18px; height: 18px; flex-shrink:0; }
+
+  .price-compare{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 18px 0;
+  }
+  .price-card{
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 16px 14px;
+    background: var(--white);
+    font-size: 13px;
+  }
+  .price-card.rb{ border-color: var(--blue); background: #F2F6FA; }
+  .price-card .name{ font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+  .price-card .amount{ font-size: 20px; font-weight: 700; margin: 6px 0; }
+  .price-card ul{ margin: 8px 0 0; padding-left: 18px; color: var(--ink-soft); }
+  .price-card li{ margin-bottom: 4px; }
+
+  .scenario-card{
+    background: var(--bg-alt);
+    border-radius: var(--radius-m);
+    padding: 18px;
+    margin: 16px 0 18px;
+    font-size: 14px;
+  }
+  .scenario-row{
+    display:flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+  }
+  .scenario-row + .scenario-row{ border-top: 1px dashed var(--line); }
+  .scenario-row .k{ color: var(--ink-soft); flex-shrink:0; }
+  .scenario-row .v{ font-weight: 700; color: var(--ink); text-align: right; }
+  .scenario-row .v.reward{ color: var(--amber-deep); font-size: 16px; }
+
+  .submit-btn{
+    width: 100%;
+    background: var(--blue);
+    color: var(--white);
+    border: none;
+    padding: 17px;
+    font-size: 16px;
+    font-weight: 700;
+    border-radius: var(--radius-s);
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+  }
+  .submit-btn:hover{ background: var(--blue-deep); }
+  .submit-btn:focus-visible{ outline: 3px solid var(--amber); outline-offset: 2px; }
+  .submit-btn:disabled{ background: var(--ink-soft); cursor: not-allowed; }
+
+  .thanks, .form-error{
+    display:none;
+    border-radius: var(--radius-m);
+    padding: 20px;
+    margin-top: 20px;
+    font-size: 14.5px;
+    line-height: 1.8;
+  }
+  .thanks{
+    background: #EEF5F1;
+    border: 1px solid #C6DED2;
+    color: #2E5C48;
+  }
+  .form-error{
+    background: #FAECEA;
+    border: 1px solid #E9C3BE;
+    color: #7A2C26;
+  }
+  .thanks.show, .form-error.show{ display:block; }
+  .thanks strong, .form-error strong{ display:block; font-size: 16px; margin-bottom: 6px; }
+  .thanks strong{ color: #23483A; }
+  .form-error strong{ color: #5F211D; }
+
+  footer{
+    padding: 40px 0 60px;
+    text-align:center;
+    color: var(--ink-soft);
+    font-size: 13px;
+  }
+  footer .badge{
+    display:inline-block;
+    background: var(--bg-alt);
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 12.5px;
+    margin-bottom: 14px;
+    color: var(--ink);
+  }
+
+  @media (min-width: 600px){
+    .hero h1{ font-size: 40px; }
+  }
+</style>
+</head>
+<body>
+
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">ROUTE BOX — 需要調査中</p>
+      <h1>どうせ行くなら、<br>その移動を収入に。</h1>
+      <p class="sub">あなたの移動予定と、<strong>同じ方向へ届けたい荷物</strong>をマッチング。<br>配送のために走る必要はありません。</p>
+
+      <div class="route-diagram" aria-hidden="true">
+        <svg viewBox="0 0 520 140" xmlns="http://www.w3.org/2000/svg">
+          <line x1="30" y1="70" x2="490" y2="70" stroke="#DCDACD" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/>
+          <circle cx="30" cy="70" r="7" fill="#26456B"/>
+          <circle cx="260" cy="70" r="9" fill="#DE9A3C"/>
+          <circle cx="490" cy="70" r="7" fill="#26456B"/>
+          <text x="30" y="40" font-size="15" font-weight="700" fill="#1E2430" text-anchor="middle" font-family="Hiragino Sans, sans-serif">宮城</text>
+          <text x="490" y="40" font-size="15" font-weight="700" fill="#1E2430" text-anchor="middle" font-family="Hiragino Sans, sans-serif">東京</text>
+          <text x="260" y="42" font-size="13" font-weight="700" fill="#B77A24" text-anchor="middle" font-family="Hiragino Sans, sans-serif">岩沼 → 宇都宮</text>
+          <text x="260" y="105" font-size="12" fill="#5B6270" text-anchor="middle" font-family="Hiragino Sans, sans-serif">荷物を1つ、途中で運ぶ</text>
+        </svg>
+      </div>
+
+      <div class="cta-group">
+        <a href="#driver-form" class="btn btn-primary">運ぶ側として興味がある</a>
+        <a href="#shipper-form" class="btn btn-secondary">荷物を送りたい</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Section 2: Example ============ -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">例えば、こんな移動。</p>
+      <h2 style="font-size:24px;">こんな予定に、こんな案件が届く。</h2>
+
+      <div class="card" style="margin-top:24px;">
+        <div class="trip-header">
+          <span>9月20日（土）13:00 出発</span>
+        </div>
+        <div class="trip-route">宮城県 → 東京都</div>
+        <div class="trip-meta">東北道経由</div>
+
+        <div class="match-arrow">マッチング案件</div>
+
+        <div class="match-card">
+          <div class="match-route">岩沼 → 宇都宮</div>
+          <dl class="match-grid">
+            <dt>荷物</dt><dd>小型荷物 1個</dd>
+            <dt>追加走行</dt><dd>6km</dd>
+            <dt>追加時間</dt><dd>約12分</dd>
+            <dt class="reward">報酬</dt><dd class="reward">3,200円</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="callout">東京へ行く予定はそのまま。途中で荷物を一つ運ぶだけ。</div>
+    </div>
+  </section>
+
+  <!-- ============ Section 2.5: Idle capacity problem ============ -->
+  <section class="idle-copy">
+    <div class="wrap">
+      <p class="eyebrow">見過ごされている移動</p>
+      <h2 style="font-size:24px;">毎日、たくさんの車が<br>荷室を空けたまま走っている。</h2>
+
+      <p class="lede">仕事。帰省。イベント。買い物。旅行。</p>
+      <p>私たちは毎日、さまざまな理由で街から街へ移動しています。</p>
+      <p>でも、その移動の多くは<br>“人だけが移動して、荷室は空いたまま”。</p>
+
+      <div class="idle-diagram" aria-hidden="true">
+        <svg viewBox="0 0 520 160" xmlns="http://www.w3.org/2000/svg">
+          <rect x="60" y="60" width="220" height="60" rx="10" fill="none" stroke="#26456B" stroke-width="3"/>
+          <rect x="270" y="78" width="46" height="30" rx="4" fill="none" stroke="#26456B" stroke-width="3"/>
+          <circle cx="110" cy="122" r="12" fill="#1E2430"/>
+          <circle cx="250" cy="122" r="12" fill="#1E2430"/>
+          <rect x="80" y="72" width="120" height="34" rx="4" fill="none" stroke="#DCDACD" stroke-width="2" stroke-dasharray="4 5"/>
+          <text x="140" y="93" font-size="12" fill="#9B9789" text-anchor="middle" font-family="Hiragino Sans, sans-serif">空いている荷室</text>
+          <rect x="335" y="82" width="24" height="20" rx="3" fill="none" stroke="#DE9A3C" stroke-width="2.5"/>
+          <line x1="335" y1="92" x2="359" y2="92" stroke="#DE9A3C" stroke-width="2"/>
+          <line x1="347" y1="82" x2="347" y2="102" stroke="#DE9A3C" stroke-width="2"/>
+          <path d="M300 92 L326 92" stroke="#DE9A3C" stroke-width="2" stroke-dasharray="3 4"/>
+          <path d="M320 87 L328 92 L320 97" fill="none" stroke="#DE9A3C" stroke-width="2"/>
+        </svg>
+      </div>
+
+      <p>ROUTE BOXが使いたいのは、新しい配送車ではありません。<br>すでに存在している、その移動です。</p>
+
+      <div class="highlight-line">空いている移動を、配送力に変える。</div>
+    </div>
+  </section>
+
+  <!-- ============ Section 3: Reverse the model ============ -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">配送の考え方を、逆にする。</p>
+      <h2 style="font-size:24px;">「荷物ありき」から「移動ありき」へ。</h2>
+
+      <div class="flow">
+        <div class="flow-group">
+          <div class="flow-label old">従来の配送</div>
+          <div class="flow-steps">
+            <div class="flow-step"><span class="num">1</span><span>荷物がある</span></div>
+            <div class="flow-step"><span class="num">2</span><span>ドライバーを探す</span></div>
+            <div class="flow-step"><span class="num">3</span><span>配送のためだけに車両が走る</span></div>
+          </div>
+        </div>
+
+        <div class="flow-group">
+          <div class="flow-label new">ROUTE BOX</div>
+          <div class="flow-steps">
+            <div class="flow-step"><span class="num">1</span><span>ドライバーが移動予定を登録する</span></div>
+            <div class="flow-step"><span class="num">2</span><span>ルート上の荷物を検索する</span></div>
+            <div class="flow-step"><span class="num">3</span><span>元々の移動のついでに荷物を運ぶ</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight-line">すでに存在する移動を、物流に。</div>
+    </div>
+  </section>
+
+  <!-- ============ Section 4: Driver benefits ============ -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">ドライバーのメリット</p>
+      <h2 style="font-size:24px;">休日の移動が、副収入になる。</h2>
+      <p>こんな移動が、そのままマッチング対象になります。</p>
+
+      <div class="chip-list">
+        <span class="chip">帰省</span>
+        <span class="chip">イベント遠征</span>
+        <span class="chip">長距離ドライブ</span>
+        <span class="chip">仕事での移動</span>
+        <span class="chip">既存配送からの帰路</span>
+      </div>
+
+      <div class="notice">有償貨物運送には法令上必要となる届出・条件があります。ROUTE BOXでは正式サービス化にあたり、必要な手続きを分かりやすく案内する仕組みを検討しています。</div>
+    </div>
+  </section>
+
+  <!-- ============ Section 5: Shipper side ============ -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">荷主のメリット</p>
+      <h2 style="font-size:24px;">その方向へ行く人が、すでにいるかもしれない。</h2>
+      <p>想定している用途はこのあたりです。</p>
+
+      <div class="chip-list">
+        <span class="chip">急ぎの小型荷物</span>
+        <span class="chip">通常配送では時間が合わない荷物</span>
+        <span class="chip">壊れやすいもの</span>
+        <span class="chip">イベント用品</span>
+        <span class="chip">模型や作品</span>
+        <span class="chip">個人間の受け渡し</span>
+        <span class="chip">企業間の緊急部品</span>
+      </div>
+
+      <div class="notice">高価品や危険物などの取扱条件は、正式サービス開始までに検討・決定していく予定です。現時点では確定していません。</div>
+    </div>
+  </section>
+
+  <!-- ============ Section 6: Trust ============ -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">安心について</p>
+      <h2 style="font-size:24px;">知らない人だからこそ、仕組みで信用する。</h2>
+
+      <div class="feature-grid">
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg></div>
+          <div class="label">本人確認</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 12l2 2 4-4"/><path d="M4 6h16v9a4 4 0 01-4 4H8a4 4 0 01-4-4V6z"/></svg></div>
+          <div class="label">配送資格・届出確認</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 17l-5.5 3 1.5-6-5-4.5 6.5-.5L12 3l2.5 6 6.5.5-5 4.5 1.5 6z"/></svg></div>
+          <div class="label">評価・配送実績</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 018 8c0 5.5-8 12-8 12S4 15.5 4 10a8 8 0 018-8z"/></svg></div>
+          <div class="label">GPS追跡</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h1v1H9zM14 9h1v1h-1zM9 14h1v1H9zM14 14h1v1h-1z"/></svg></div>
+          <div class="label">受け渡しQRコード</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/></svg></div>
+          <div class="label">荷物写真</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M2 10h20"/></svg></div>
+          <div class="label">キャッシュレス決済</div>
+        </div>
+        <div class="feature">
+          <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3l9 4-9 4-9-4 9-4z"/><path d="M3 11l9 4 9-4M3 15l9 4 9-4"/></svg></div>
+          <div class="label">補償・トラブル対応</div>
+        </div>
+      </div>
+      <p class="feature-note">これらは正式サービス時に導入を検討している機能です。現時点ではまだ提供していません。</p>
+    </div>
+  </section>
+
+  <!-- ============ Section 7: Test recruit intro ============ -->
+  <section>
+    <div class="wrap">
+      <p class="eyebrow">テスト参加募集</p>
+      <h2 style="font-size:24px;">ROUTE BOXは、まだ実験段階です。</h2>
+      <p>正式サービス化を前提に、現在は需要調査・仮説検証を行っています。</p>
+
+      <div class="test-note">
+        <div>探しているのは、こちらです。</div>
+        <div class="distinguish">
+          <div class="distinguish-row"><span class="no">「こんな仕組みなら使いたい」という感想</span></div>
+          <div class="distinguish-row"><span class="yes">→ 実際に使う可能性がある方の声</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ Driver Form ============ -->
+  <section class="form-section">
+    <div class="wrap">
+      <p class="eyebrow">運ぶ側として参加</p>
+      <h2 id="driver-form" style="font-size:24px; scroll-margin-top: 24px;">ドライバー向けアンケート</h2>
+      <p class="form-intro">3〜4分ほどで終わります。<span class="req-mark">必須</span> の項目以外は任意です。</p>
+
+      <form id="driverForm" novalidate>
+        <div class="field" data-required="select" id="field-d-region">
+          <label class="field-label" for="d-region">居住地域<span class="req-mark">必須</span></label>
+          <select id="d-region" name="region">
+            <option value="">選択してください</option>
+            <option value="北海道">北海道</option>
+            <option value="東北">東北</option>
+            <option value="関東">関東</option>
+            <option value="中部">中部</option>
+            <option value="近畿">近畿</option>
+            <option value="中国">中国</option>
+            <option value="四国">四国</option>
+            <option value="九州・沖縄">九州・沖縄</option>
+          </select>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="d-age">年代</label>
+          <select id="d-age" name="age">
+            <option value="">選択してください</option>
+            <option value="10代">10代</option>
+            <option value="20代">20代</option>
+            <option value="30代">30代</option>
+            <option value="40代">40代</option>
+            <option value="50代">50代</option>
+            <option value="60代以上">60代以上</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="d-car">普段利用する車種</label>
+          <select id="d-car" name="carType">
+            <option value="">選択してください</option>
+            <option value="軽自動車">軽自動車</option>
+            <option value="普通乗用車">普通乗用車</option>
+            <option value="ミニバン">ミニバン</option>
+            <option value="SUV">SUV</option>
+            <option value="バン・商用車">バン・商用車</option>
+            <option value="トラック">トラック</option>
+          </select>
+        </div>
+
+        <div class="field" data-required="group" id="field-d-frequency">
+          <span class="field-label">長距離移動の頻度<span class="req-mark">必須</span></span>
+          <div class="option-grid vertical" data-group="frequency">
+            <button type="button" class="option-btn" aria-pressed="false">ほぼ毎週</button>
+            <button type="button" class="option-btn" aria-pressed="false">月に数回</button>
+            <button type="button" class="option-btn" aria-pressed="false">月に1回程度</button>
+            <button type="button" class="option-btn" aria-pressed="false">数ヶ月に1回</button>
+            <button type="button" class="option-btn" aria-pressed="false">ほとんどない</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="d-route">よく移動する区間</label>
+          <div class="field-sub">例：宮城県 → 東京都</div>
+          <input type="text" id="d-route" name="commonRoute" placeholder="出発地 → 到着地">
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="d-reason">主な移動理由</label>
+          <select id="d-reason" name="reason">
+            <option value="">選択してください</option>
+            <option value="帰省">帰省</option>
+            <option value="イベント遠征">イベント遠征</option>
+            <option value="長距離ドライブ">長距離ドライブ</option>
+            <option value="仕事での移動">仕事での移動</option>
+            <option value="既存配送からの帰路">既存配送からの帰路</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div class="field" data-required="group" id="field-d-extraTime">
+          <span class="field-label">どのくらいの追加時間なら許容できますか<span class="req-mark">必須</span></span>
+          <div class="option-grid" data-group="extraTime">
+            <button type="button" class="option-btn" aria-pressed="false">5分以内</button>
+            <button type="button" class="option-btn" aria-pressed="false">10分以内</button>
+            <button type="button" class="option-btn" aria-pressed="false">20分以内</button>
+            <button type="button" class="option-btn" aria-pressed="false">30分以内</button>
+            <button type="button" class="option-btn" aria-pressed="false">条件次第</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field" data-required="group" id="field-d-rewardExpectation">
+          <span class="field-label">追加10分程度で小型荷物1個を運ぶ場合、いくらならやってみたいですか？<span class="req-mark">必須</span></span>
+          <div class="option-grid" data-group="rewardExpectation">
+            <button type="button" class="option-btn" aria-pressed="false">500円</button>
+            <button type="button" class="option-btn" aria-pressed="false">1,000円</button>
+            <button type="button" class="option-btn" aria-pressed="false">2,000円</button>
+            <button type="button" class="option-btn" aria-pressed="false">3,000円</button>
+            <button type="button" class="option-btn" aria-pressed="false">5,000円以上</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field" data-required="group" id="field-d-scenario">
+          <span class="field-label">実際にこんな案件が届いたら、受けますか？<span class="req-mark">必須</span></span>
+
+          <div class="scenario-card">
+            <div class="scenario-row"><span class="k">現在の予定</span><span class="v">宮城県 → 東京都</span></div>
+            <div class="scenario-row"><span class="k">追加案件</span><span class="v">岩沼 → 宇都宮</span></div>
+            <div class="scenario-row"><span class="k">荷物</span><span class="v">小型荷物 1個</span></div>
+            <div class="scenario-row"><span class="k">追加走行</span><span class="v">約6km</span></div>
+            <div class="scenario-row"><span class="k">追加時間</span><span class="v">約12分</span></div>
+            <div class="scenario-row"><span class="k">報酬</span><span class="v reward" id="scenarioRewardDisplay">—</span></div>
+          </div>
+
+          <div class="option-grid vertical" data-group="driverScenarioReaction">
+            <button type="button" class="option-btn" aria-pressed="false">受けたい</button>
+            <button type="button" class="option-btn" aria-pressed="false">条件次第で受ける</button>
+            <button type="button" class="option-btn" aria-pressed="false">この金額では受けない</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field" data-required="group" id="field-d-interestLevel">
+          <span class="field-label">必要な届出や手続きを行えば、休日限定で荷物を運ぶことに興味がありますか？<span class="req-mark">必須</span></span>
+          <div class="option-grid vertical" data-group="interestLevel">
+            <button type="button" class="option-btn" aria-pressed="false">非常に興味がある</button>
+            <button type="button" class="option-btn" aria-pressed="false">条件次第で興味がある</button>
+            <button type="button" class="option-btn" aria-pressed="false">手続きが簡単なら考える</button>
+            <button type="button" class="option-btn" aria-pressed="false">興味はない</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="d-email">メールアドレス（任意）</label>
+          <div class="field-sub">テスト開始時のご連絡に使用します。</div>
+          <input type="email" id="d-email" name="email" placeholder="example@mail.com">
+        </div>
+
+        <button type="submit" class="submit-btn">テスト参加に登録する</button>
+
+        <div class="thanks" id="driverThanks">
+          <strong>テスト参加ありがとうございます。</strong>
+          現在は仮説検証段階のため、正式な配送依頼はまだ受け付けていません。
+        </div>
+        <div class="form-error" id="driverError">
+          <strong>送信に失敗しました。</strong>
+          時間をおいてもう一度お試しください。
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- ============ Shipper Form ============ -->
+  <section class="form-section">
+    <div class="wrap">
+      <p class="eyebrow">荷主として参加</p>
+      <h2 id="shipper-form" style="font-size:24px; scroll-margin-top: 24px;">荷主向けアンケート</h2>
+      <p class="form-intro">こちらも3分ほどで終わります。<span class="req-mark">必須</span> の項目以外は任意です。</p>
+
+      <form id="shipperForm" novalidate>
+        <div class="field" data-required="select" id="field-s-region">
+          <label class="field-label" for="s-region">居住地域<span class="req-mark">必須</span></label>
+          <select id="s-region" name="region">
+            <option value="">選択してください</option>
+            <option value="北海道">北海道</option>
+            <option value="東北">東北</option>
+            <option value="関東">関東</option>
+            <option value="中部">中部</option>
+            <option value="近畿">近畿</option>
+            <option value="中国">中国</option>
+            <option value="四国">四国</option>
+            <option value="九州・沖縄">九州・沖縄</option>
+          </select>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field" data-required="group" id="field-s-shipFrequency">
+          <span class="field-label">過去1年間の荷物発送頻度<span class="req-mark">必須</span></span>
+          <div class="option-grid vertical" data-group="shipFrequency">
+            <button type="button" class="option-btn" aria-pressed="false">週に1回以上</button>
+            <button type="button" class="option-btn" aria-pressed="false">月に数回</button>
+            <button type="button" class="option-btn" aria-pressed="false">数ヶ月に1回</button>
+            <button type="button" class="option-btn" aria-pressed="false">年に数回程度</button>
+            <button type="button" class="option-btn" aria-pressed="false">ほとんどない</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="s-item">送りたい荷物の種類</label>
+          <select id="s-item" name="itemType">
+            <option value="">選択してください</option>
+            <option value="急ぎの小型荷物">急ぎの小型荷物</option>
+            <option value="壊れやすいもの">壊れやすいもの</option>
+            <option value="イベント用品">イベント用品</option>
+            <option value="模型や作品">模型や作品</option>
+            <option value="個人間の受け渡し">個人間の受け渡し</option>
+            <option value="企業間の部品など">企業間の部品など</option>
+            <option value="その他">その他</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="s-scene">利用したい場面</label>
+          <input type="text" id="s-scene" name="useCase" placeholder="例：週末に急ぎで作品を届けたい">
+        </div>
+
+        <div class="field" data-required="group" id="field-s-priceReaction">
+          <span class="field-label">この価格・条件なら利用を検討しますか？<span class="req-mark">必須</span></span>
+          <div class="price-compare">
+            <div class="price-card">
+              <div class="name">通常宅配</div>
+              <div class="amount">1,200円</div>
+              <ul>
+                <li>翌日〜翌々日着</li>
+              </ul>
+            </div>
+            <div class="price-card rb">
+              <div class="name">ROUTE BOX</div>
+              <div class="amount"><span id="shownPriceDisplay">—</span></div>
+              <ul>
+                <li>条件が合えば当日</li>
+                <li>位置確認可能</li>
+                <li>直接受け渡し</li>
+              </ul>
+            </div>
+          </div>
+          <div class="option-grid vertical" data-group="priceReaction">
+            <button type="button" class="option-btn" aria-pressed="false">ぜひ使いたい</button>
+            <button type="button" class="option-btn" aria-pressed="false">荷物によって使いたい</button>
+            <button type="button" class="option-btn" aria-pressed="false">少し高いと感じる</button>
+            <button type="button" class="option-btn" aria-pressed="false">この価格では使わない</button>
+          </div>
+          <div class="field-error">この項目を選択してください</div>
+        </div>
+
+        <div class="field" data-required="checkbox" id="field-s-trust">
+          <span class="field-label">知らない個人ドライバーへ荷物を預ける際、何があれば安心できますか？<span class="req-mark">必須</span></span>
+          <div class="field-sub">複数選択できます。</div>
+          <div class="checkbox-grid" id="s-trust-group">
+            <label class="checkbox-row"><input type="checkbox" value="本人確認">本人確認</label>
+            <label class="checkbox-row"><input type="checkbox" value="評価">評価</label>
+            <label class="checkbox-row"><input type="checkbox" value="GPS追跡">GPS追跡</label>
+            <label class="checkbox-row"><input type="checkbox" value="運営会社の補償">運営会社の補償</label>
+            <label class="checkbox-row"><input type="checkbox" value="配送資格確認">配送資格確認</label>
+            <label class="checkbox-row"><input type="checkbox" value="受け渡し写真">受け渡し写真</label>
+            <label class="checkbox-row"><input type="checkbox" value="その他">その他</label>
+          </div>
+          <div class="field-error">少なくとも1つ選択してください</div>
+        </div>
+
+        <div class="field">
+          <label class="field-label" for="s-email">メールアドレス（任意）</label>
+          <div class="field-sub">テスト開始時のご連絡に使用します。</div>
+          <input type="email" id="s-email" name="email" placeholder="example@mail.com">
+        </div>
+
+        <button type="submit" class="submit-btn">荷主テストに参加する</button>
+
+        <div class="thanks" id="shipperThanks">
+          <strong>テスト参加ありがとうございます。</strong>
+          現在は仮説検証段階のため、正式な配送依頼はまだ受け付けていません。
+        </div>
+        <div class="form-error" id="shipperError">
+          <strong>送信に失敗しました。</strong>
+          時間をおいてもう一度お試しください。
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span class="badge">現在、正式サービスではありません（需要調査段階）</span>
+      <p>ROUTE BOX は、正式サービス化を前提に検証を進めているプロジェクトです。ご意見・ご感想もお待ちしています。</p>
+    </div>
+  </footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     送信先エンドポイント設定
+     ------------------------------------------------------------
+     Google Apps Script をウェブアプリとしてデプロイし、発行された
+     URL（https://script.google.com/macros/s/xxxx/exec）をここに
+     入力してください。未設定（空文字）の間は、送信内容を
+     console.log に出力するだけの動作になります（ローカル確認用）。
+  ============================================================ */
+  var DRIVER_FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbxluV_9QiCA3yZNHElHeXsfkMz5vDXAHWoR29m2uUWB3ekrh3Bx2vEzHGi2llzAZ4CXBw/exec";
+  var SHIPPER_FORM_ENDPOINT = "https://script.google.com/macros/s/AKfycbxluV_9QiCA3yZNHElHeXsfkMz5vDXAHWoR29m2uUWB3ekrh3Bx2vEzHGi2llzAZ4CXBw/exec";
+
+  // ---- Toggle-button groups (single-select) ----
+  function initGroup(groupEl){
+    var buttons = groupEl.querySelectorAll(".option-btn");
+    buttons.forEach(function(btn){
+      btn.addEventListener("click", function(){
+        buttons.forEach(function(b){ b.setAttribute("aria-pressed", "false"); });
+        btn.setAttribute("aria-pressed", "true");
+        groupEl.dataset.value = btn.textContent;
+        clearFieldError(groupEl.closest(".field"));
+      });
+    });
+  }
+  document.querySelectorAll(".option-grid[data-group]").forEach(initGroup);
+
+  function getGroupValue(formEl, groupName){
+    var el = formEl.querySelector('.option-grid[data-group="' + groupName + '"]');
+    return el ? (el.dataset.value || "") : "";
+  }
+
+  function resetGroup(formEl, groupName){
+    var el = formEl.querySelector('.option-grid[data-group="' + groupName + '"]');
+    if (!el) return;
+    delete el.dataset.value;
+    el.querySelectorAll('.option-btn').forEach(function(b){ b.setAttribute("aria-pressed", "false"); });
+  }
+
+  function getCheckedValues(containerEl){
+    return Array.prototype.slice
+      .call(containerEl.querySelectorAll('input[type="checkbox"]:checked'))
+      .map(function(i){ return i.value; });
+  }
+
+  // ---- Clear an error state on interaction ----
+  function clearFieldError(fieldEl){
+    if (!fieldEl) return;
+    fieldEl.classList.remove("invalid");
+    var err = fieldEl.querySelector(".field-error");
+    if (err) err.classList.remove("show");
+  }
+  document.querySelectorAll(".field select").forEach(function(sel){
+    sel.addEventListener("change", function(){ clearFieldError(sel.closest(".field")); });
+  });
+  document.querySelectorAll('#s-trust-group input[type="checkbox"]').forEach(function(cb){
+    cb.addEventListener("change", function(){ clearFieldError(cb.closest(".field")); });
+  });
+
+  // ---- Required-field validation ----
+  // Checks fields marked with data-required, in document order, and
+  // scrolls to + flags the first one that is missing an answer.
+  function isFieldValid(fieldEl){
+    var type = fieldEl.dataset.required;
+    if (!type) return true;
+    if (type === "select"){
+      var sel = fieldEl.querySelector("select");
+      return !!(sel && sel.value !== "");
+    }
+    if (type === "group"){
+      var group = fieldEl.querySelector(".option-grid[data-group]");
+      return !!(group && group.dataset.value);
+    }
+    if (type === "checkbox"){
+      return fieldEl.querySelectorAll('input[type="checkbox"]:checked').length > 0;
+    }
+    return true;
+  }
+
+  function validateForm(formEl){
+    var fields = formEl.querySelectorAll(".field[data-required]");
+    for (var i = 0; i < fields.length; i++){
+      var fieldEl = fields[i];
+      if (!isFieldValid(fieldEl)){
+        fieldEl.classList.add("invalid");
+        var err = fieldEl.querySelector(".field-error");
+        if (err) err.classList.add("show");
+        fieldEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        return false;
+      } else {
+        clearFieldError(fieldEl);
+      }
+    }
+    return true;
+  }
+
+  // ---- Random, session-fixed values ----
+  // Chosen once on page load and reused for the whole session so a
+  // given visitor always sees (and answers about) the same figure.
+  var SHIPPER_PRICE_OPTIONS = [1500, 2000, 2500, 3000, 4000];
+  var DRIVER_SCENARIO_REWARD_OPTIONS = [1000, 1500, 2000, 2500, 3000];
+
+  function pickRandom(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  var shownPrice = pickRandom(SHIPPER_PRICE_OPTIONS);
+  var scenarioReward = pickRandom(DRIVER_SCENARIO_REWARD_OPTIONS);
+
+  document.getElementById("shownPriceDisplay").textContent = shownPrice.toLocaleString() + "円";
+  document.getElementById("scenarioRewardDisplay").textContent = scenarioReward.toLocaleString() + "円";
+
+  // ---- Shared submission helper ----
+  // Posts JSON to a Google Apps Script Web App endpoint. Content-Type
+  // is left as text/plain to avoid a CORS preflight request, which
+  // Apps Script Web Apps do not handle. If no endpoint is configured
+  // yet, falls back to console.log so the page can be tested locally.
+  function submitFormData(endpoint, data){
+    if (!endpoint){
+      console.log("[ROUTE BOX] (endpoint未設定のためconsole.logに出力)", data);
+      return Promise.resolve({ ok: true, fallback: true });
+    }
+    return fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(data)
+    }).then(function(res){
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return { ok: true };
+    }).catch(function(err){
+      console.error("[ROUTE BOX] 送信エラー:", err);
+      return { ok: false, error: err };
+    });
+  }
+
+  function collectMeta(){
+    return {
+      userAgent: navigator.userAgent,
+      screenWidth: window.screen ? window.screen.width : null,
+      referrer: document.referrer || ""
+    };
+  }
+
+  function setSubmitting(btn, isSubmitting, originalLabel){
+    btn.disabled = isSubmitting;
+    btn.textContent = isSubmitting ? "送信中…" : originalLabel;
+  }
+
+  // ---- Driver form ----
+  var driverForm = document.getElementById("driverForm");
+  var driverSubmitBtn = driverForm.querySelector(".submit-btn");
+  var driverSubmitLabel = driverSubmitBtn.textContent;
+  var driverThanks = document.getElementById("driverThanks");
+  var driverError = document.getElementById("driverError");
+
+  driverForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    driverThanks.classList.remove("show");
+    driverError.classList.remove("show");
+
+    if (!validateForm(driverForm)) return;
+
+    var meta = collectMeta();
+    var data = {
+      formType: "driver",
+      region: driverForm.region.value,
+      age: driverForm.age.value,
+      carType: driverForm.carType.value,
+      frequency: getGroupValue(driverForm, "frequency"),
+      commonRoute: driverForm.commonRoute.value,
+      reason: driverForm.reason.value,
+      extraTime: getGroupValue(driverForm, "extraTime"),
+      rewardExpectation: getGroupValue(driverForm, "rewardExpectation"),
+      interestLevel: getGroupValue(driverForm, "interestLevel"),
+      driverScenarioReward: scenarioReward,
+      driverScenarioReaction: getGroupValue(driverForm, "driverScenarioReaction"),
+      email: driverForm.email.value,
+      submittedAt: new Date().toISOString(),
+      userAgent: meta.userAgent,
+      screenWidth: meta.screenWidth,
+      referrer: meta.referrer
+    };
+
+    setSubmitting(driverSubmitBtn, true, driverSubmitLabel);
+    submitFormData(DRIVER_FORM_ENDPOINT, data).then(function(result){
+      setSubmitting(driverSubmitBtn, false, driverSubmitLabel);
+      if (result.ok){
+        driverThanks.classList.add("show");
+        driverThanks.scrollIntoView({ behavior: "smooth", block: "center" });
+        driverForm.reset();
+        ["frequency", "extraTime", "rewardExpectation", "driverScenarioReaction", "interestLevel"].forEach(function(g){
+          resetGroup(driverForm, g);
+        });
+      } else {
+        driverError.classList.add("show");
+        driverError.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  });
+
+  // ---- Shipper form ----
+  var shipperForm = document.getElementById("shipperForm");
+  var shipperSubmitBtn = shipperForm.querySelector(".submit-btn");
+  var shipperSubmitLabel = shipperSubmitBtn.textContent;
+  var shipperThanks = document.getElementById("shipperThanks");
+  var shipperError = document.getElementById("shipperError");
+  var trustGroup = document.getElementById("s-trust-group");
+
+  shipperForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    shipperThanks.classList.remove("show");
+    shipperError.classList.remove("show");
+
+    if (!validateForm(shipperForm)) return;
+
+    var meta = collectMeta();
+    var data = {
+      formType: "shipper",
+      region: shipperForm.region.value,
+      shipFrequency: getGroupValue(shipperForm, "shipFrequency"),
+      itemType: shipperForm.itemType.value,
+      useCase: shipperForm.useCase.value,
+      shownPrice: shownPrice,
+      priceReaction: getGroupValue(shipperForm, "priceReaction"),
+      trustFactors: getCheckedValues(trustGroup),
+      email: shipperForm.email.value,
+      submittedAt: new Date().toISOString(),
+      userAgent: meta.userAgent,
+      screenWidth: meta.screenWidth,
+      referrer: meta.referrer
+    };
+
+    setSubmitting(shipperSubmitBtn, true, shipperSubmitLabel);
+    submitFormData(SHIPPER_FORM_ENDPOINT, data).then(function(result){
+      setSubmitting(shipperSubmitBtn, false, shipperSubmitLabel);
+      if (result.ok){
+        shipperThanks.classList.add("show");
+        shipperThanks.scrollIntoView({ behavior: "smooth", block: "center" });
+        shipperForm.reset();
+        ["shipFrequency", "priceReaction"].forEach(function(g){
+          resetGroup(shipperForm, g);
+        });
+        trustGroup.querySelectorAll('input[type="checkbox"]').forEach(function(cb){ cb.checked = false; });
+      } else {
+        shipperError.classList.add("show");
+        shipperError.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
