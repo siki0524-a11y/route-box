@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ROUTE BOX（β版）| 移動予定起点型の配送マッチング</title>
+<meta name="description" content="ROUTE BOXは、移動予定のあるドライバーと配送希望をつなぐ、移動予定起点型の配送マッチングサービスです。現在βテスト運用中。">
+<style>
+  :root{
+    --navy: #16233F;
+    --navy-deep: #0E1830;
+    --navy-soft: #2C3B5C;
+    --amber: #E8A33D;
+    --amber-deep: #C07F1E;
+    --bg: #FAF6EC;
+    --bg-alt: #FFFFFF;
+    --line: #E4DDCB;
+    --text: #232A38;
+    --text-mute: #666F7D;
+    --danger: #B3432B;
+    --radius-s: 6px;
+    --radius-m: 10px;
+    --maxw: 1040px;
+  }
+
+  *{ box-sizing: border-box; }
+  html{ scroll-behavior: smooth; }
+  body{
+    margin:0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic", "Noto Sans JP", "Meiryo", sans-serif;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+    font-size: 16px;
+  }
+  img{ max-width:100%; display:block; }
+  a{ color: inherit; }
+  ul{ margin:0; padding:0; list-style:none; }
+  button{ font-family: inherit; }
+
+  .wrap{
+    max-width: var(--maxw);
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  /* ---------- Top beta strip ---------- */
+  .beta-strip{
+    background: var(--navy-deep);
+    color: #F4E6C8;
+    font-size: 13px;
+    text-align: center;
+    padding: 8px 16px;
+    letter-spacing: 0.02em;
+  }
+  .beta-strip strong{ color: var(--amber); font-weight: 700; }
+
+  /* ---------- Header ---------- */
+  header.site{
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(250,246,236,0.94);
+    backdrop-filter: saturate(140%) blur(6px);
+    border-bottom: 1px solid var(--line);
+  }
+  .site-inner{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 14px 20px;
+  }
+  .logo{
+    display:flex;
+    align-items:baseline;
+    gap:8px;
+    font-weight:700;
+    font-size: 19px;
+    color: var(--navy);
+    text-decoration:none;
+    letter-spacing: 0.01em;
+  }
+  .logo .mark{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:26px;
+    height:26px;
+    background: var(--navy);
+    color:#fff;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:700;
+  }
+  .badge-beta{
+    font-size:12px;
+    font-weight:700;
+    color: var(--navy);
+    background: rgba(232,163,61,0.22);
+    border: 1px solid rgba(192,127,30,0.4);
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    padding: 14px 22px;
+    border-radius: var(--radius-s);
+    font-weight:700;
+    font-size:15.5px;
+    text-decoration:none;
+    border: 1px solid transparent;
+    cursor:pointer;
+    transition: background-color .15s ease, border-color .15s ease, transform .1s ease;
+  }
+  .btn:active{ transform: translateY(1px); }
+  .btn-primary{
+    background: var(--navy);
+    color:#fff;
+  }
+  .btn-primary:hover{ background: var(--navy-soft); }
+  .btn-amber{
+    background: var(--amber);
+    color: var(--navy-deep);
+  }
+  .btn-amber:hover{ background: var(--amber-deep); color:#fff; }
+  .btn-outline{
+    background: transparent;
+    border-color: var(--navy);
+    color: var(--navy);
+  }
+  .btn-outline:hover{ background: rgba(22,35,63,0.06); }
+  .btn-block{ width:100%; }
+  .btn[disabled]{ opacity:0.55; cursor: not-allowed; }
+
+  /* ---------- Hero ---------- */
+  .hero{
+    padding: 56px 0 40px;
+  }
+  .hero-copy{ max-width: 620px; }
+  .hero h1{
+    font-size: clamp(28px, 6vw, 42px);
+    line-height: 1.45;
+    margin: 0 0 18px;
+    color: var(--navy-deep);
+    font-weight: 700;
+  }
+  .hero p.lead{
+    font-size: 16.5px;
+    color: var(--text-mute);
+    margin: 0 0 28px;
+  }
+  .hero-ctas{
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+  }
+  .hero-note{
+    margin-top:14px;
+    font-size:13px;
+    color: var(--text-mute);
+  }
+  .hero-visual{
+    margin-top: 36px;
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 20px;
+  }
+  .route-line{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:14px;
+    color: var(--navy);
+    font-weight:700;
+  }
+  .route-line .dot{
+    width:8px; height:8px; border-radius:50%;
+    background: var(--amber);
+    flex: none;
+  }
+  .route-line .bar{
+    flex:1;
+    height:2px;
+    background: repeating-linear-gradient(90deg, var(--line) 0 6px, transparent 6px 10px);
+  }
+  .route-sub{ font-size:13px; color: var(--text-mute); margin-top:6px; }
+
+  /* ---------- Notice box ---------- */
+  .notice{
+    background: #FFF7E8;
+    border: 1px solid rgba(192,127,30,0.35);
+    border-radius: var(--radius-m);
+    padding: 16px 18px;
+    font-size: 13.5px;
+    color: #5A3E10;
+  }
+  .notice + .notice{ margin-top: 10px; }
+  .notice strong{ display:block; margin-bottom:4px; color: var(--navy-deep); font-size:14px; }
+
+  /* ---------- Section shell ---------- */
+  section{ padding: 56px 0; }
+  section.alt{ background: var(--bg-alt); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .section-head{ max-width: 640px; margin-bottom: 32px; }
+  .section-head h2{
+    font-size: clamp(22px, 4vw, 28px);
+    color: var(--navy-deep);
+    margin: 0 0 10px;
+    font-weight: 700;
+    line-height: 1.5;
+  }
+  .section-head p{ color: var(--text-mute); margin:0; font-size:15px; }
+
+  .callout-line{
+    font-size: clamp(19px, 3.6vw, 24px);
+    font-weight: 700;
+    color: var(--navy-deep);
+    border-left: 4px solid var(--amber);
+    padding-left: 16px;
+    margin: 28px 0;
+  }
+
+  /* ---------- Concept compare ---------- */
+  .compare{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+  @media(min-width: 760px){
+    .compare{ grid-template-columns: 1fr 1fr; }
+  }
+  .compare-card{
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 22px;
+  }
+  .compare-card h3{
+    margin:0 0 16px;
+    font-size:15px;
+    color: var(--text-mute);
+    font-weight:700;
+  }
+  .flow-steps{ display:flex; flex-direction:column; gap:0; }
+  .flow-steps li{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding: 10px 0;
+    font-size:14.5px;
+  }
+  .flow-steps li:not(:last-child){ border-bottom: 1px dashed var(--line); }
+  .flow-steps .num{
+    flex:none;
+    width:22px; height:22px;
+    border-radius:50%;
+    background: var(--navy);
+    color:#fff;
+    font-size:12px;
+    font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .compare-card.highlight .num{ background: var(--amber); color: var(--navy-deep); }
+  .compare-card.highlight{ border-color: rgba(192,127,30,0.4); }
+
+  /* ---------- Usage example (scenario) ---------- */
+  .scenario{
+    display:grid;
+    gap:16px;
+  }
+  .scenario-card{
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 20px;
+    position: relative;
+  }
+  .scenario-card .tag{
+    display:inline-block;
+    font-size:12px;
+    font-weight:700;
+    color: var(--navy);
+    background: rgba(22,35,63,0.07);
+    border-radius: 999px;
+    padding: 3px 10px;
+    margin-bottom: 10px;
+  }
+  .scenario-arrow{
+    text-align:center;
+    color: var(--amber-deep);
+    font-size: 20px;
+    line-height:1;
+  }
+  .scenario-meta{
+    display:flex;
+    flex-wrap:wrap;
+    gap: 8px 18px;
+    font-size: 14px;
+    color: var(--text-mute);
+    margin-top: 8px;
+  }
+  .scenario-meta b{ color: var(--text); }
+  .reward-pill{
+    display:inline-block;
+    margin-top:14px;
+    font-size:13px;
+    font-weight:700;
+    color: var(--navy-deep);
+    background: rgba(232,163,61,0.2);
+    border: 1px solid rgba(192,127,30,0.35);
+    padding: 6px 12px;
+    border-radius: 999px;
+  }
+  .fineprint{ font-size:12px; color: var(--text-mute); margin-top:10px; }
+
+  /* ---------- chips ---------- */
+  .chip-row{ display:flex; flex-wrap:wrap; gap:10px; margin: 18px 0 22px; }
+  .chip{
+    font-size:13.5px;
+    padding: 8px 14px;
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--text);
+  }
+  .chip.excluded{
+    background: #FBEDE8;
+    border-color: rgba(179,67,43,0.3);
+    color: var(--danger);
+  }
+
+  .warn-line{
+    display:flex;
+    gap:10px;
+    align-items:flex-start;
+    background: #FBEDE8;
+    border: 1px solid rgba(179,67,43,0.3);
+    border-radius: var(--radius-m);
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #7A2E1B;
+    margin: 20px 0;
+  }
+
+  /* ---------- Two-col generic ---------- */
+  .two-col{
+    display:grid;
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  @media(min-width: 800px){
+    .two-col{ grid-template-columns: 1.1fr 0.9fr; align-items:start; }
+  }
+
+  /* ---------- Flow tabs ---------- */
+  .flow-tabs{ display:flex; gap:10px; margin-bottom:20px; }
+  .flow-tab{
+    flex:1;
+    padding: 12px;
+    text-align:center;
+    border: 1px solid var(--line);
+    background: var(--bg-alt);
+    border-radius: var(--radius-s);
+    font-weight:700;
+    font-size: 14.5px;
+    cursor:pointer;
+    color: var(--text-mute);
+  }
+  .flow-tab.active{
+    background: var(--navy);
+    border-color: var(--navy);
+    color: #fff;
+  }
+  .flow-panel{ display:none; }
+  .flow-panel.active{ display:block; }
+  .flow-list{ display:flex; flex-direction:column; }
+  .flow-list li{
+    display:flex; gap:14px;
+    padding: 14px 0;
+  }
+  .flow-list li:not(:last-child){ border-bottom: 1px solid var(--line); }
+  .flow-list .num{
+    flex:none; width:28px; height:28px;
+    border-radius:50%;
+    background: rgba(22,35,63,0.08);
+    color: var(--navy);
+    font-weight:700; font-size:13px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .flow-list .txt b{ display:block; font-size:15px; margin-bottom:2px; }
+  .flow-list .txt span{ font-size:13.5px; color: var(--text-mute); }
+
+  /* ---------- Safety features ---------- */
+  .safety-grid{
+    display:grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+  @media(min-width: 640px){
+    .safety-grid{ grid-template-columns: repeat(3, 1fr); }
+  }
+  .safety-item{
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    padding: 14px;
+    font-size: 13.5px;
+    text-align:center;
+    color: var(--text);
+  }
+
+  /* ---------- Forms ---------- */
+  .form-section{ scroll-margin-top: 80px; }
+  .form-card{
+    background: var(--bg-alt);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-m);
+    padding: 26px 22px;
+    max-width: 640px;
+  }
+  .field{ margin-bottom: 18px; }
+  .field label{
+    display:block;
+    font-size: 14px;
+    font-weight:700;
+    color: var(--navy-deep);
+    margin-bottom: 6px;
+  }
+  .field label .opt{
+    font-weight:400;
+    color: var(--text-mute);
+    font-size:12.5px;
+    margin-left:6px;
+  }
+  .field input[type="text"],
+  .field input[type="email"],
+  .field input[type="date"],
+  .field input[type="number"],
+  .field select,
+  .field textarea{
+    width:100%;
+    padding: 11px 12px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-s);
+    font-size: 15px;
+    background: #fff;
+    color: var(--text);
+    font-family: inherit;
+  }
+  .field textarea{ min-height: 84px; resize: vertical; }
+  .field input:focus,
+  .field select:focus,
+  .field textarea:focus{
+    outline: 2px solid var(--navy-soft);
+    outline-offset: 1px;
+    border-color: var(--navy-soft);
+  }
+  .field.field--invalid input,
+  .field.field--invalid select,
+  .field.field--invalid textarea{
+    border-color: var(--danger);
+  }
+  .field-error{
+    display:none;
+    color: var(--danger);
+    font-size: 12.5px;
+    margin-top: 6px;
+  }
+  .field.field--invalid .field-error{ display:block; }
+  .checkbox-row{ display:flex; align-items:center; gap:8px; }
+  .checkbox-row input{ width:auto; }
+  .checkbox-row label{ margin:0; font-weight:400; font-size:14px; color: var(--text); }
+
+  .form-status{
+    margin-top: 16px;
+    font-size: 14px;
+    display:none;
+    padding: 12px 14px;
+    border-radius: var(--radius-s);
+  }
+  .form-status.show{ display:block; }
+  .form-status.pending{ background:#F1F0EA; color: var(--text-mute); }
+  .form-status.success{ background:#E9F2E7; color:#2C5A24; border:1px solid #BFDCB8; }
+  .form-status.error{ background:#FBEDE8; color:#7A2E1B; border:1px solid rgba(179,67,43,0.3); }
+
+  .form-done{
+    display:none;
+    text-align:center;
+    padding: 30px 10px;
+  }
+  .form-done.show{ display:block; }
+  .form-done h3{ color: var(--navy-deep); margin-bottom:10px; }
+  .form-done p{ color: var(--text-mute); font-size:14.5px; }
+
+  .privacy-note{
+    max-width: 640px;
+    font-size: 12.5px;
+    color: var(--text-mute);
+    margin-top: 14px;
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    background: var(--navy-deep);
+    color: #C9D0DD;
+    padding: 40px 0 30px;
+    font-size: 13px;
+  }
+  footer .foot-top{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:space-between;
+    gap: 16px;
+    margin-bottom: 18px;
+  }
+  footer a.survey-link{
+    color: #C9D0DD;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  footer .foot-legal{
+    color: #8993A6;
+    font-size: 12px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 16px;
+    margin-top: 8px;
+  }
+
+  .anchor-jump{ scroll-margin-top: 76px; }
+
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior: auto; }
+    *{ transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="beta-strip">現在、<strong>ROUTE BOX</strong>はβテスト運用中です。登録内容は運営が確認のうえ、条件が合う場合のみご連絡します。</div>
+
+<header class="site">
+  <div class="site-inner">
+    <a href="#top" class="logo"><span class="mark">RB</span>ROUTE BOX</a>
+    <span class="badge-beta">β版</span>
+  </div>
+</header>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-copy">
+        <h1>どうせ行くなら、<br>その移動を価値に。</h1>
+        <p class="lead">移動予定と荷物をつなぐ、新しい配送マッチング。すでに移動予定のあるドライバーと、同じ方向へ荷物を届けたい人をつなぐ、移動予定起点型の配送マッチングサービスです。</p>
+        <div class="hero-ctas">
+          <a href="#form-driver" class="btn btn-primary">ドライバーとして登録する</a>
+          <a href="#form-shipment" class="btn btn-outline">荷物を送りたい</a>
+        </div>
+        <p class="hero-note">現在βテスト運用中</p>
+      </div>
+
+      <div class="hero-visual">
+        <div class="route-line"><span class="dot"></span><span class="bar"></span><span>宮城県 → 東京都</span></div>
+        <p class="route-sub">9月20日 13:00出発予定・東北道経由 のようなドライバーの移動予定に、途中の配送希望を照らし合わせます。</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ CONCEPT ============ -->
+  <section class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>移動が先にあり、配送はそのあとについてくる。</h2>
+        <p>従来の配送は「荷物のためにドライバーを探す」流れでした。ROUTE BOXは順番を入れ替えます。</p>
+      </div>
+
+      <div class="compare">
+        <div class="compare-card">
+          <h3>従来の配送</h3>
+          <ul class="flow-steps">
+            <li><span class="num">1</span>荷物がある</li>
+            <li><span class="num">2</span>ドライバーを探す</li>
+            <li><span class="num">3</span>配送のために車両が走る</li>
+          </ul>
+        </div>
+        <div class="compare-card highlight">
+          <h3>ROUTE BOX</h3>
+          <ul class="flow-steps">
+            <li><span class="num">1</span>ドライバーが移動予定を登録</li>
+            <li><span class="num">2</span>そのルート上の配送希望を探す</li>
+            <li><span class="num">3</span>元々の移動のついでに荷物を運ぶ</li>
+          </ul>
+        </div>
+      </div>
+
+      <p class="callout-line">空いている移動を、配送力に変える。</p>
+    </div>
+  </section>
+
+  <!-- ============ USAGE IMAGE ============ -->
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>利用イメージ</h2>
+        <p>実際の登録から連絡までの流れを、ひとつの例でご紹介します。</p>
+      </div>
+
+      <div class="scenario">
+        <div class="scenario-card">
+          <span class="tag">ドライバーの移動予定</span>
+          <div class="scenario-meta">
+            <span><b>宮城県</b> → <b>東京都</b></span>
+            <span>9月20日 13:00出発</span>
+            <span>東北道経由</span>
+          </div>
+        </div>
+
+        <div class="scenario-arrow">↓ ROUTE BOXが配送希望を確認 ↓</div>
+
+        <div class="scenario-card">
+          <span class="tag">配送希望</span>
+          <div class="scenario-meta">
+            <span><b>岩沼</b> → <b>宇都宮</b></span>
+            <span>小型荷物1個</span>
+            <span>追加走行 約6km</span>
+            <span>追加時間 約12分</span>
+          </div>
+        </div>
+
+        <div class="scenario-arrow">↓ 条件が合えばドライバーへ連絡 ↓</div>
+
+        <div class="scenario-card">
+          <span class="tag">成立イメージ</span>
+          <p style="margin:0; font-size:14.5px; color:var(--text-mute);">追加の走行はわずかで、元々の移動の範囲内。内容を確認のうえ、運営からドライバーへご連絡します。</p>
+          <span class="reward-pill">報酬例：2,000円〜</span>
+          <p class="fineprint">※ 報酬額は荷物の内容や距離によって異なり、確定した金額ではありません。あくまで一例です。</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ DRIVER ============ -->
+  <section class="alt">
+    <div class="wrap two-col">
+      <div>
+        <div class="section-head">
+          <h2>予定していた移動が、副収入になる。</h2>
+          <p>すでに予定している移動を、ちょっとした配送につなげる仕組みです。</p>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip">帰省</span>
+          <span class="chip">イベント遠征</span>
+          <span class="chip">仕事での移動</span>
+          <span class="chip">長距離ドライブ</span>
+          <span class="chip">既存配送からの帰路</span>
+        </div>
+
+        <div class="warn-line">
+          <span>有償貨物運送には、法令上必要となる届出・条件があります。誰でもすぐに有償配送ができるわけではありません。β版では、運送可能な条件を満たしている方を対象にテスト運用します。</span>
+        </div>
+
+        <a href="#form-driver" class="btn btn-amber">βドライバー登録</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SHIPPER ============ -->
+  <section>
+    <div class="wrap two-col">
+      <div>
+        <div class="section-head">
+          <h2>その方向へ行く人が、すでにいるかもしれない。</h2>
+          <p>通常の配送では時間が合わない荷物も、誰かの移動予定に乗せられるかもしれません。</p>
+        </div>
+
+        <div class="chip-row">
+          <span class="chip">急ぎの小型荷物</span>
+          <span class="chip">書類</span>
+          <span class="chip">イベント用品</span>
+          <span class="chip">企業間部品</span>
+          <span class="chip">個人間の受け渡し</span>
+        </div>
+
+        <p style="font-size:14px; color:var(--text-mute); margin:0 0 8px;">初期β版では、以下の荷物は対象外を予定しています。</p>
+        <div class="chip-row">
+          <span class="chip excluded">危険物</span>
+          <span class="chip excluded">高額品</span>
+          <span class="chip excluded">生もの</span>
+          <span class="chip excluded">現金</span>
+          <span class="chip excluded">貴金属</span>
+          <span class="chip excluded">違法物</span>
+          <span class="chip excluded">その他高リスク品</span>
+        </div>
+
+        <a href="#form-shipment" class="btn btn-amber" style="margin-top:14px;">配送希望を登録</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FLOW ============ -->
+  <section class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>利用の流れ</h2>
+        <p>現在は自動マッチングではなく、運営が内容を確認して手動でつなぎます。</p>
+      </div>
+
+      <div class="flow-tabs" role="tablist">
+        <div class="flow-tab active" data-target="flow-driver" role="tab">ドライバーの流れ</div>
+        <div class="flow-tab" data-target="flow-shipper" role="tab">荷主の流れ</div>
+      </div>
+
+      <div class="flow-panel active" id="flow-driver">
+        <ul class="flow-list">
+          <li><span class="num">1</span><span class="txt"><b>βドライバー登録</b><span>基本情報を登録します</span></span></li>
+          <li><span class="num">2</span><span class="txt"><b>移動予定を登録</b><span>出発地・到着地・日時を登録します</span></span></li>
+          <li><span class="num">3</span><span class="txt"><b>ROUTE BOXが配送希望を確認</b><span>ルート上の配送希望と照らし合わせます</span></span></li>
+          <li><span class="num">4</span><span class="txt"><b>条件が合えば連絡</b><span>運営から個別にご連絡します</span></span></li>
+          <li><span class="num">5</span><span class="txt"><b>内容確認後、配送実施</b><span>詳細をすり合わせたうえで実施します</span></span></li>
+        </ul>
+      </div>
+
+      <div class="flow-panel" id="flow-shipper">
+        <ul class="flow-list">
+          <li><span class="num">1</span><span class="txt"><b>配送希望を登録</b><span>集荷・配送エリアと日時を登録します</span></span></li>
+          <li><span class="num">2</span><span class="txt"><b>ROUTE BOXが移動予定を確認</b><span>登録されている移動予定と照らし合わせます</span></span></li>
+          <li><span class="num">3</span><span class="txt"><b>条件が合えば連絡</b><span>運営から個別にご連絡します</span></span></li>
+          <li><span class="num">4</span><span class="txt"><b>内容・料金・日時を確認</b><span>詳細をすり合わせます</span></span></li>
+          <li><span class="num">5</span><span class="txt"><b>配送成立</b><span>合意の上で配送を実施します</span></span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ SAFETY ============ -->
+  <section>
+    <div class="wrap">
+      <div class="section-head">
+        <h2>安心して使えるように</h2>
+        <p>正式版に向けて導入を検討している機能です。β版では未実装のものも含まれます。</p>
+      </div>
+      <div class="safety-grid">
+        <div class="safety-item">本人確認</div>
+        <div class="safety-item">配送資格・届出確認</div>
+        <div class="safety-item">評価・実績</div>
+        <div class="safety-item">受け渡し記録</div>
+        <div class="safety-item">荷物写真</div>
+        <div class="safety-item">GPS追跡</div>
+        <div class="safety-item">キャッシュレス決済</div>
+        <div class="safety-item">補償</div>
+        <div class="safety-item">トラブル対応</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FORM: DRIVER ============ -->
+  <section class="alt form-section anchor-jump" id="form-driver">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>βドライバー登録</h2>
+        <p>まずは基本情報のご登録です。移動予定は登録後、別フォームからご入力いただけます。</p>
+      </div>
+
+      <div class="notice">
+        <strong>現在、ROUTE BOXはβテスト運用中です</strong>
+        登録された移動予定や配送希望は、自動的に成立するものではありません。運営が内容を確認し、条件が合う場合のみご連絡します。
+      </div>
+      <div class="notice">
+        <strong>有償貨物運送についての注意</strong>
+        有償貨物運送には、法令上必要となる届出・条件があります。β版では、運送可能な条件を満たしている方を対象にテスト運用します。
+      </div>
+
+      <div class="form-card" style="margin-top:20px;">
+        <form id="driverForm" novalidate>
+          <div class="field" data-required="true">
+            <label for="d-email">メールアドレス</label>
+            <input type="email" id="d-email" name="email">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="d-region">居住地域</label>
+            <input type="text" id="d-region" name="region" placeholder="例：宮城県仙台市">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="d-carType">車種</label>
+            <input type="text" id="d-carType" name="carType" placeholder="例：軽バン、ミニバンなど">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="d-legalStatus">有償貨物運送に必要な手続き状況</label>
+            <select id="d-legalStatus" name="legalStatus">
+              <option value="">選択してください</option>
+              <option value="すでに有償貨物運送可能">すでに有償貨物運送可能</option>
+              <option value="現在手続き中">現在手続き中</option>
+              <option value="必要な手続きをこれから調べたい">必要な手続きをこれから調べたい</option>
+              <option value="よく分からない">よく分からない</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="d-commonRoute">よく走る区間</label>
+            <input type="text" id="d-commonRoute" name="commonRoute" placeholder="例：仙台⇄東京、週末の東北道など">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="d-frequency">長距離移動頻度</label>
+            <select id="d-frequency" name="frequency">
+              <option value="">選択してください</option>
+              <option value="週1回以上">週1回以上</option>
+              <option value="月2〜3回程度">月2〜3回程度</option>
+              <option value="月1回程度">月1回程度</option>
+              <option value="年に数回程度">年に数回程度</option>
+              <option value="不定期">不定期</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field">
+            <label for="d-reason">参加理由 <span class="opt">任意</span></label>
+            <textarea id="d-reason" name="reason" placeholder="ROUTE BOXに興味を持ったきっかけなど"></textarea>
+          </div>
+
+          <div class="field">
+            <label for="d-note">補足 <span class="opt">任意</span></label>
+            <textarea id="d-note" name="note"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">βドライバー登録</button>
+          <div class="form-status" id="d-status"></div>
+        </form>
+
+        <div class="form-done" id="d-done">
+          <h3>登録ありがとうございます。</h3>
+          <p>内容を確認し、必要に応じてROUTE BOXからご連絡します。</p>
+          <p><a href="#form-trip" class="btn btn-outline" style="margin-top:10px;">続けて移動予定を登録する</a></p>
+        </div>
+      </div>
+
+      <p class="privacy-note">入力情報はβテスト運用・連絡・サービス改善の目的にのみ使用します。本名・住所・電話番号・本人確認書類は、このフォームでは取得しません。マッチ成立候補が出た場合、必要な情報は個別に確認します。</p>
+    </div>
+  </section>
+
+  <!-- ============ FORM: TRIP ============ -->
+  <section class="form-section anchor-jump" id="form-trip">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>移動予定登録</h2>
+        <p>登録済みのドライバーの方は、こちらから移動予定をご登録ください。</p>
+      </div>
+
+      <div class="form-card">
+        <form id="tripForm" novalidate>
+          <div class="field" data-required="true">
+            <label for="t-email">メールアドレス</label>
+            <input type="email" id="t-email" name="email">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="t-origin">出発エリア</label>
+            <input type="text" id="t-origin" name="origin" placeholder="例：宮城県岩沼市">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="t-destination">到着エリア</label>
+            <input type="text" id="t-destination" name="destination" placeholder="例：東京都江東区">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="t-departureDate">出発予定日</label>
+            <input type="date" id="t-departureDate" name="departureDate">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="t-departureTimeRange">出発予定時間帯</label>
+            <select id="t-departureTimeRange" name="departureTimeRange">
+              <option value="">選択してください</option>
+              <option value="午前（6時〜12時）">午前（6時〜12時）</option>
+              <option value="午後（12時〜17時）">午後（12時〜17時）</option>
+              <option value="夕方（17時〜20時）">夕方（17時〜20時）</option>
+              <option value="夜間（20時以降）">夜間（20時以降）</option>
+              <option value="未定・応相談">未定・応相談</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="t-packageCapacity">積載可能な荷物サイズ</label>
+            <select id="t-packageCapacity" name="packageCapacity">
+              <option value="">選択してください</option>
+              <option value="小型">小型</option>
+              <option value="60サイズ程度">60サイズ程度</option>
+              <option value="100サイズ程度">100サイズ程度</option>
+              <option value="それ以上">それ以上</option>
+              <option value="条件次第">条件次第</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field">
+            <label for="t-via">経由地 <span class="opt">任意</span></label>
+            <input type="text" id="t-via" name="via" placeholder="例：東北道 白石IC付近">
+          </div>
+
+          <div class="field">
+            <label for="t-extraTime">許容追加時間 <span class="opt">任意</span></label>
+            <input type="text" id="t-extraTime" name="extraTime" placeholder="例：15分程度まで">
+          </div>
+
+          <div class="field">
+            <label for="t-note">備考 <span class="opt">任意</span></label>
+            <textarea id="t-note" name="note"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">移動予定を登録</button>
+          <div class="form-status" id="t-status"></div>
+        </form>
+
+        <div class="form-done" id="t-done">
+          <h3>移動予定を登録しました。</h3>
+          <p>条件の合う配送希望が見つかった場合のみ、ROUTE BOXからご連絡します。</p>
+        </div>
+      </div>
+
+      <p class="privacy-note">入力情報はβテスト運用・連絡・サービス改善の目的にのみ使用します。</p>
+    </div>
+  </section>
+
+  <!-- ============ FORM: SHIPMENT ============ -->
+  <section class="alt form-section anchor-jump" id="form-shipment">
+    <div class="wrap">
+      <div class="section-head">
+        <h2>配送希望を登録</h2>
+        <p>荷物を送りたい方はこちらからご登録ください。</p>
+      </div>
+
+      <div class="notice">
+        <strong>現在、ROUTE BOXはβテスト運用中です</strong>
+        登録された配送希望は、自動的に成立するものではありません。運営が内容を確認し、条件が合う場合のみご連絡します。
+      </div>
+
+      <div class="form-card" style="margin-top:20px;">
+        <form id="shipmentForm" novalidate>
+          <div class="field" data-required="true">
+            <label for="s-email">メールアドレス</label>
+            <input type="email" id="s-email" name="email">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-pickupArea">集荷エリア</label>
+            <input type="text" id="s-pickupArea" name="pickupArea" placeholder="例：宮城県岩沼市">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-deliveryArea">配送先エリア</label>
+            <input type="text" id="s-deliveryArea" name="deliveryArea" placeholder="例：栃木県宇都宮市">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-preferredDate">希望日</label>
+            <input type="date" id="s-preferredDate" name="preferredDate">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-preferredTimeRange">希望時間帯</label>
+            <select id="s-preferredTimeRange" name="preferredTimeRange">
+              <option value="">選択してください</option>
+              <option value="午前（6時〜12時）">午前（6時〜12時）</option>
+              <option value="午後（12時〜17時）">午後（12時〜17時）</option>
+              <option value="夕方（17時〜20時）">夕方（17時〜20時）</option>
+              <option value="夜間（20時以降）">夜間（20時以降）</option>
+              <option value="未定・応相談">未定・応相談</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-itemType">荷物の種類</label>
+            <input type="text" id="s-itemType" name="itemType" placeholder="例：書類、小型雑貨など">
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-packageSize">荷物サイズ</label>
+            <select id="s-packageSize" name="packageSize">
+              <option value="">選択してください</option>
+              <option value="小型">小型</option>
+              <option value="60サイズ程度">60サイズ程度</option>
+              <option value="100サイズ程度">100サイズ程度</option>
+              <option value="それ以上">それ以上</option>
+              <option value="条件次第">条件次第</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field" data-required="true">
+            <label for="s-weight">重量目安</label>
+            <select id="s-weight" name="weight">
+              <option value="">選択してください</option>
+              <option value="〜1kg">〜1kg</option>
+              <option value="1〜5kg">1〜5kg</option>
+              <option value="5〜10kg">5〜10kg</option>
+              <option value="10kg以上">10kg以上</option>
+              <option value="わからない">わからない</option>
+            </select>
+            <div class="field-error"></div>
+          </div>
+
+          <div class="field">
+            <label for="s-budget">希望予算 <span class="opt">任意</span></label>
+            <input type="text" id="s-budget" name="budget" placeholder="例：3,000円程度">
+          </div>
+
+          <div class="field checkbox-row">
+            <input type="checkbox" id="s-urgent" name="urgent">
+            <label for="s-urgent">急ぎの配送希望です</label>
+          </div>
+
+          <div class="field">
+            <label for="s-note">補足 <span class="opt">任意</span></label>
+            <textarea id="s-note" name="note" placeholder="危険物・高額品・生もの・現金・貴金属など対象外の品ではないことをご確認ください"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">配送希望を登録</button>
+          <div class="form-status" id="s-status"></div>
+        </form>
+
+        <div class="form-done" id="s-done">
+          <h3>配送希望を受け付けました。</h3>
+          <p>条件の合う移動予定が見つかった場合のみご連絡します。</p>
+        </div>
+      </div>
+
+      <p class="privacy-note">入力情報はβテスト運用・連絡・サービス改善の目的にのみ使用します。危険物・高額品・生もの・現金・貴金属・違法物・その他高リスク品は、初期β版では対象外を予定しています。</p>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="foot-top">
+      <div><strong style="color:#fff;">ROUTE BOX</strong>（β版）</div>
+      <a class="survey-link" href="./survey.html">これまでの需要調査アンケートはこちら</a>
+    </div>
+    <div class="foot-legal">
+      現在βテスト運用中です。掲載内容はテスト運用に伴い変更される場合があります。有償貨物運送には法令上必要な届出・条件があり、β版では対象条件を満たす方のみを対象としています。
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  /* =====================================================
+     エンドポイント設定
+     Google Apps Script のウェブアプリURLをここに設定してください。
+     未設定（空文字）の場合はコンソールに出力するだけで、
+     ローカルでも動作確認ができます。
+  ===================================================== */
+  const DRIVER_ENDPOINT = "https://script.google.com/macros/s/AKfycbwIyrCQ7eHPwsLd6sy8UjpjGuvFII29sNEtckppIOw5hemVECupf8f_dCOiFvgYRJdsQQ/exec";
+  const TRIP_ENDPOINT = "https://script.google.com/macros/s/AKfycbwIyrCQ7eHPwsLd6sy8UjpjGuvFII29sNEtckppIOw5hemVECupf8f_dCOiFvgYRJdsQQ/exec";
+  const SHIPMENT_ENDPOINT = "https://script.google.com/macros/s/AKfycbwIyrCQ7eHPwsLd6sy8UjpjGuvFII29sNEtckppIOw5hemVECupf8f_dCOiFvgYRJdsQQ/exec";
+
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  /* ---------- flow tabs ---------- */
+  const tabs = document.querySelectorAll(".flow-tab");
+  tabs.forEach(function(tab){
+    tab.addEventListener("click", function(){
+      tabs.forEach(function(t){ t.classList.remove("active"); });
+      document.querySelectorAll(".flow-panel").forEach(function(p){ p.classList.remove("active"); });
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.target).classList.add("active");
+    });
+  });
+
+  /* ---------- common helpers ---------- */
+  function setFieldError(fieldEl, message){
+    fieldEl.classList.add("field--invalid");
+    var err = fieldEl.querySelector(".field-error");
+    if(err){ err.textContent = message; }
+  }
+  function clearFieldError(fieldEl){
+    fieldEl.classList.remove("field--invalid");
+    var err = fieldEl.querySelector(".field-error");
+    if(err){ err.textContent = ""; }
+  }
+
+  function validateForm(form){
+    var fields = form.querySelectorAll(".field[data-required='true']");
+    var firstInvalid = null;
+
+    fields.forEach(function(fieldEl){
+      var input = fieldEl.querySelector("input, select, textarea");
+      if(!input) return;
+      clearFieldError(fieldEl);
+
+      var value = (input.value || "").trim();
+      var isSelect = input.tagName === "SELECT";
+
+      if(value === ""){
+        setFieldError(fieldEl, isSelect ? "この項目を選択してください" : "この項目を入力してください");
+        if(!firstInvalid) firstInvalid = fieldEl;
+        return;
+      }
+
+      if(input.type === "email" && !EMAIL_RE.test(value)){
+        setFieldError(fieldEl, "正しいメールアドレスを入力してください");
+        if(!firstInvalid) firstInvalid = fieldEl;
+      }
+    });
+
+    return firstInvalid;
+  }
+
+  function buildPayload(form, formType){
+    var data = { formType: formType };
+    var elements = form.querySelectorAll("input, select, textarea");
+    elements.forEach(function(el){
+      if(!el.name) return;
+      if(el.type === "checkbox"){
+        data[el.name] = el.checked;
+      } else {
+        data[el.name] = (el.value || "").trim();
+      }
+    });
+    data.submittedAt = new Date().toISOString();
+    data.userAgent = navigator.userAgent;
+    data.screenWidth = window.screen ? window.screen.width : "";
+    data.referrer = document.referrer || "";
+    return data;
+  }
+
+  function setStatus(statusEl, type, text){
+    statusEl.className = "form-status show " + type;
+    statusEl.textContent = text;
+  }
+
+  function sendPayload(endpoint, payload){
+    if(!endpoint){
+      console.log("[ROUTE BOX] endpoint 未設定のため送信をシミュレートします:", payload);
+      return new Promise(function(resolve){
+        setTimeout(resolve, 500);
+      });
+    }
+    return fetch(endpoint, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+  }
+
+  function setupForm(config){
+    var form = document.getElementById(config.formId);
+    if(!form) return;
+    var statusEl = document.getElementById(config.statusId);
+    var doneEl = document.getElementById(config.doneId);
+    var submitBtn = form.querySelector("button[type='submit']");
+    var isSubmitting = false;
+
+    form.addEventListener("submit", function(e){
+      e.preventDefault();
+      if(isSubmitting) return;
+
+      var firstInvalid = validateForm(form);
+      if(firstInvalid){
+        firstInvalid.scrollIntoView({ behavior: "smooth", block: "center" });
+        var focusTarget = firstInvalid.querySelector("input, select, textarea");
+        if(focusTarget) focusTarget.focus({ preventScroll: true });
+        return;
+      }
+
+      isSubmitting = true;
+      submitBtn.disabled = true;
+      var originalLabel = submitBtn.textContent;
+      submitBtn.textContent = "送信中…";
+      setStatus(statusEl, "pending", "送信中…");
+
+      var payload = buildPayload(form, config.formType);
+
+      sendPayload(config.endpoint, payload).then(function(){
+        form.style.display = "none";
+        statusEl.classList.remove("show");
+        doneEl.classList.add("show");
+        doneEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }).catch(function(err){
+        console.error("[ROUTE BOX] 送信エラー:", err);
+        setStatus(statusEl, "error", "送信に失敗しました。通信環境をご確認の上、もう一度お試しください。");
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalLabel;
+        isSubmitting = false;
+      });
+    });
+  }
+
+  setupForm({
+    formId: "driverForm",
+    statusId: "d-status",
+    doneId: "d-done",
+    endpoint: DRIVER_ENDPOINT,
+    formType: "driver"
+  });
+
+  setupForm({
+    formId: "tripForm",
+    statusId: "t-status",
+    doneId: "t-done",
+    endpoint: TRIP_ENDPOINT,
+    formType: "trip"
+  });
+
+  setupForm({
+    formId: "shipmentForm",
+    statusId: "s-status",
+    doneId: "s-done",
+    endpoint: SHIPMENT_ENDPOINT,
+    formType: "shipment"
+  });
+
+})();
+</script>
+
+</body>
+</html>
